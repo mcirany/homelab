@@ -33,3 +33,9 @@ services:
       PAPERLESS_REDIS: redis://broker:6379
       PAPERLESS_DBHOST: db
       PAPERLESS_OCR_USER_ARGS: '{"invalidate_digital_signatures": true}'
+
+volumes:
+  data:
+  media:
+  pgdata:
+  redisdata:
