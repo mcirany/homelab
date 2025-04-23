@@ -6,7 +6,7 @@ services:
     expose:
       - "5000"
     env_file:
-      - stack.env
+      - ../stack.env
 
 networks:
   default:
