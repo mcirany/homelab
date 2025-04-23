@@ -1,6 +1,6 @@
 services:
   flask-app:
-    images: ghcr.io/canc-re/happyapi:sha-991d44b
+    image: ghcr.io/canc-re/happyapi:sha-991d44b
     container_name: flask-webhook
     restart: always
     expose:
