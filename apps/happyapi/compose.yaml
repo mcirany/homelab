@@ -5,9 +5,8 @@ services:
     restart: always
     expose:
       - "5000"
-    environment:
-      - VIRTUAL_HOST=happyplex.fr
-      - LETSENCRYPT_HOST=happyplex.fr
+    env_file:
+      - stack.env
 
 networks:
   default:
