@@ -1,0 +1,15 @@
+services:
+  flask-app:
+    images: ghcr.io/canc-re/happyapi:sha-991d44b
+    container_name: flask-webhook
+    restart: always
+    expose:
+      - "5000"
+    environment:
+      - VIRTUAL_HOST=happyplex.fr
+      - LETSENCRYPT_HOST=happyplex.fr
+
+networks:
+  default:
+    external: true
+    name: npm
