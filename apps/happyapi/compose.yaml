@@ -5,6 +5,8 @@ services:
     restart: always
     expose:
       - "5000"
+    env_file:
+      - stack.env
 
 networks:
   default:
