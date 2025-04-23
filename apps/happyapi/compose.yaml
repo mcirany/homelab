@@ -5,9 +5,24 @@ services:
     restart: always
     expose:
       - "5000"
-    env_file:
-      - ../stack.env
-
+    environment:
+      STRIPE_API_KEY: ${STRIPE_API_KEY}
+      STRIPE_SECRET: ${STRIPE_SECRET}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID}
+      PLEX_TOKEN: ${PLEX_TOKEN}
+      PLEX_BASE_URL: ${PLEX_BASE_URL}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      EMAIL_FROM: ${EMAIL_FROM}
+      FROM_EMAIL: ${FROM_EMAIL}
+      PLEX_USERNAME: ${PLEX_USERNAME}
+      PLEX_PASSWORD: ${PLEX_PASSWORD}
+      VIRTUAL_HOST: ${VIRTUAL_HOST}
+      LETSENCRYPT_HOST: ${LETSENCRYPT_HOST}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
 networks:
   default:
     external: true
