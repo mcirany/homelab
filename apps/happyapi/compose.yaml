@@ -23,6 +23,7 @@ services:
       VIRTUAL_HOST: ${VIRTUAL_HOST}
       LETSENCRYPT_HOST: ${LETSENCRYPT_HOST}
       LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+      STRIPE_PLEX_PRICE_ID: ${STRIPE_PLEX_PRICE_ID}
 networks:
   default:
     external: true
