@@ -7,6 +7,7 @@
     ":separateMajorReleases"
   ],
   "labels": ["dependencies"],
+  "dependencyDashboardApproval": false,
   "automergeSchedule": ["after 3am and before 7am"],
   "ignoreTests": true,
   "packageRules": [
