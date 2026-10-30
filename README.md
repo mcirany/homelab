@@ -87,3 +87,18 @@ Règles :
   certificats, uploads) va dans un volume nommé ou un chemin absolu de l'hôte.
 - Retirer une app du fichier serveur ne la supprime pas : `destroy` est désactivé pour
   éviter de perdre des volumes par erreur.
+
+## Mises à jour des images (Renovate)
+
+[Renovate](https://docs.renovatebot.com) (app GitHub Mend) lit tous les `compose*.yaml` du repo
+et ouvre une PR par image à mettre à jour. Config : [`renovate.json`](renovate.json).
+
+- Patch (`v3.6.8` → `v3.6.9`) : automerge entre 3h et 7h, donc déployé par doco-cd dans la foulée.
+- Mineure et majeure : PR à relire et merger à la main (une PR séparée par majeure).
+- Majeures postgres : désactivées, elles demandent une migration.
+- doco-cd : jamais en automerge. Après merge, sur le serveur :
+  `cd /opt/infra/doco-cd && <copier compose.yaml> && docker compose up -d`.
+- Vue d'ensemble : issue « Dependency Dashboard » du repo.
+
+Rien à faire pour une nouvelle app : Renovate la détecte, à condition que le tag soit versionné
+(`traefik:v3.6.8`, pas `latest`).

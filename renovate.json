@@ -1,0 +1,33 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":timezone(Europe/Paris)",
+    ":dependencyDashboard",
+    ":separateMajorReleases"
+  ],
+  "labels": ["dependencies"],
+  "schedule": ["before 7am"],
+  "automergeSchedule": ["after 3am and before 7am"],
+  "ignoreTests": true,
+  "packageRules": [
+    {
+      "description": "Un merge sur main = un déploiement : seuls les patchs passent tout seuls",
+      "matchManagers": ["docker-compose"],
+      "matchUpdateTypes": ["patch", "digest"],
+      "automerge": true
+    },
+    {
+      "description": "doco-cd n'est pas déployé par lui-même : mise à jour manuelle sur le serveur après merge",
+      "matchPackageNames": ["ghcr.io/kimdre/doco-cd"],
+      "automerge": false,
+      "addLabels": ["manuel"]
+    },
+    {
+      "description": "Majeures de bases de données : migration (pg_dump/pg_restore) nécessaire",
+      "matchPackageNames": ["docker.io/library/postgres", "postgres"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    }
+  ]
+}
