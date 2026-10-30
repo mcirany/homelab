@@ -1,0 +1,9 @@
+# Déploiements du serveur "srvfr01".
+# Lu par l'instance doco-cd de ce serveur (POLL_CONFIG -> target: srvfr01).
+# Un document YAML (séparé par ---) = un projet compose.
+name: traefik
+working_dir: infra/traefik
+environment:
+  # Chemin absolu sur l'hôte, hors du clone git (sinon perdu au redéploiement)
+  TRAEFIK_HOST_DIR: /opt/infra/traefik
+destroy: false

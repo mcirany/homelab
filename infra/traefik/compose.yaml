@@ -1,0 +1,29 @@
+# Reverse proxy du serveur. Déployé par doco-cd (voir .doco-cd.srvfr01.yml).
+# Le nom de projet "traefik" doit rester inchangé : le réseau créé s'appelle
+# "traefik_proxy" et les autres apps s'y rattachent.
+services:
+  traefik:
+    image: traefik:v3.6.8
+    container_name: traefik
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    env_file: secrets.enc.env
+    environment:
+      OVH_ENDPOINT: ovh-eu
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Config en lecture seule, servie depuis le repo par doco-cd
+      - ./traefik.yaml:/etc/traefik/traefik.yaml:ro
+      - ./config:/etc/traefik/config/:ro
+      # Certificats : chemin absolu de l'hôte, hors du clone git (chmod 600)
+      - ${TRAEFIK_HOST_DIR:?TRAEFIK_HOST_DIR non défini}/acme.json:/acme.json
+    networks:
+      - proxy
+    dns:
+      - 192.168.10.1
+
+networks:
+  proxy:

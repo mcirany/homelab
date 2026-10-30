@@ -1,0 +1,27 @@
+# Config dynamique de traefik : coller ici le contenu de /opt/traefik/config/dynamic.yaml.
+http:
+  serversTransports:
+    ignore-nas-ssl:
+      insecureSkipVerify: true
+
+  middlewares:
+    tautulli-whitelist:
+      ipAllowList:
+        sourceRange:
+          - "192.168.1.0/24"
+
+  services:
+    nas-service:
+      loadBalancer:
+        serversTransport: ignore-nas-ssl
+        servers:
+          - url: "http://192.168.1.110:5000"
+
+  routers:
+    nas-router:
+      rule: "Host(`dsm-fr.cineplex.fr`)"
+      entryPoints:
+        - websecure
+      service: nas-service
+      tls:
+        certResolver: ovh-resolver

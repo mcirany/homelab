@@ -1,0 +1,11 @@
+# OS / outils
+.DS_Store
+.ansible/
+
+# Secrets en clair : seuls les fichiers *.enc.* chiffrés par SOPS sont versionnés
+*.dec.*
+*.agekey
+age.key
+keys.txt
+infra/doco-cd/.env
+infra/doco-cd/secrets/

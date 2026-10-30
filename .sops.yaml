@@ -1,0 +1,7 @@
+# Règles de chiffrement SOPS (age).
+# Remplacer la clé publique par celle générée avec `age-keygen` (ligne "public key: age1...").
+# Ajouter une clé publique par serveur (et une pour toi) pour que chacun puisse déchiffrer.
+creation_rules:
+  - path_regex: .*\.enc\.(env|ya?ml|json)$
+    age: >-
+      age1mah3ry5ckc37wgrg3pxxfezhve9vpzuvp40glmavz6xnmgakkuwq7nzg8t,age1dm6rm6jn5z4488s0z7nrmcj0djm3lxhx8hlcwgxlw653crl689kqcq93tj

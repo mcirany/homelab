@@ -1,0 +1,43 @@
+# Instance doco-cd, une par serveur. Bootstrap manuel (voir README.md),
+# ensuite elle déploie les apps listées dans .doco-cd.<DOCO_TARGET>.yml.
+services:
+  app:
+    container_name: doco-cd
+    image: ghcr.io/kimdre/doco-cd:0.131.0
+    restart: unless-stopped
+    # Polling uniquement : aucun port publié
+    environment:
+      TZ: Europe/Paris
+      GIT_ACCESS_TOKEN_FILE: /run/secrets/git_access_token
+      GIT_AUTH_DOMAINS: "- domains: [github.com]"
+      SOPS_AGE_KEY_FILE: /run/secrets/sops_age_key
+      POLL_CONFIG: |
+        - url: https://github.com/mcirany/homelab.git
+          reference: main
+          interval: 180
+          target: ${DOCO_TARGET:?DOCO_TARGET non défini dans .env}
+    secrets:
+      - git_access_token
+      - sops_age_key
+    volumes:
+      # Le socket Docker donne un accès équivalent root à l'hôte
+      - /var/run/docker.sock:/var/run/docker.sock
+      - data:/data
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      start_period: 15s
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+secrets:
+  git_access_token:
+    file: ./secrets/git_access_token
+  sops_age_key:
+    file: ./secrets/sops_age_key
+
+volumes:
+  data:
