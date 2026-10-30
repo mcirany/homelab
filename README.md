@@ -90,8 +90,14 @@ Règles :
 
 ## Mises à jour des images (Renovate)
 
-[Renovate](https://docs.renovatebot.com) (app GitHub Mend) lit tous les `compose*.yaml` du repo
-et ouvre une PR par image à mettre à jour. Config : [`renovate.json`](renovate.json).
+[Renovate](https://docs.renovatebot.com) tourne toutes les heures dans GitHub Actions
+([`.github/workflows/renovate.yml`](.github/workflows/renovate.yml)), lit tous les `compose*.yaml`
+du repo et ouvre une PR par image à mettre à jour. Config : [`renovate.json`](renovate.json).
+Lancement manuel : onglet Actions → renovate → Run workflow.
+
+Le workflow utilise le secret `RENOVATE_TOKEN` : token *fine-grained* limité au repo `homelab`,
+permissions `Contents`, `Pull requests`, `Issues` et `Workflows` en Read and write. À renouveler
+avant son expiration.
 
 - Patch (`v3.6.8` → `v3.6.9`) : automerge entre 3h et 7h, donc déployé par doco-cd dans la foulée.
 - Mineure et majeure : PR à relire et merger à la main (une PR séparée par majeure).
