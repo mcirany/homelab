@@ -7,3 +7,9 @@ environment:
   # Chemin absolu sur l'hôte, hors du clone git (sinon perdu au redéploiement)
   TRAEFIK_HOST_DIR: /opt/infra/traefik
 destroy: false
+---
+name: seer
+working_dir: apps/seer
+environment:
+  SEER_HOST_DIR: /opt/apps/seer
+destroy: false
