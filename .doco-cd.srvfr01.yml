@@ -30,3 +30,7 @@ working_dir: apps/tautulli
 environment:
   TAUTULLI_HOST_DIR: /opt/apps/tautulli
 destroy: false
+---
+name: tracearr
+working_dir: apps/tracearr
+destroy: false

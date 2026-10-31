@@ -13,7 +13,9 @@ interroge le repo toutes les 3 minutes.
 │   │   └── compose.yml
 │   ├── seer/
 │   │   └── compose.yml
-│   └── tautulli/
+│   ├── tautulli/
+│   │   └── compose.yml
+│   └── tracearr/
 │       └── compose.yml
 ├── infra/                   # Briques d'infra
 │   ├── doco-cd/             # Agent GitOps, bootstrap manuel une fois par serveur

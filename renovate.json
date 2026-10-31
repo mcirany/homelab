@@ -53,6 +53,13 @@
         "plexinc/pms-docker"
       ],
       "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)\\.(?<build>\\d+)-[0-9a-f]+$"
+    },
+    {
+      "description": "Tracearr : tags supervised-X.Y.Z uniquement (pas de beta ni de nightly)",
+      "matchPackageNames": [
+        "ghcr.io/connorgallopo/tracearr"
+      ],
+      "versioning": "regex:^supervised-(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$"
     }
   ]
 }
