@@ -24,3 +24,9 @@ destroy:
   enabled: false
   remove_volumes: false
   remove_images: false
+---
+name: tautulli
+working_dir: apps/tautulli
+environment:
+  TAUTULLI_HOST_DIR: /opt/apps/tautulli
+destroy: false

@@ -11,7 +11,9 @@ interroge le repo toutes les 3 minutes.
 ├── apps/                    # Applications (un dossier = un projet compose)
 │   ├── plex/
 │   │   └── compose.yml
-│   └── seer/
+│   ├── seer/
+│   │   └── compose.yml
+│   └── tautulli/
 │       └── compose.yml
 ├── infra/                   # Briques d'infra
 │   ├── doco-cd/             # Agent GitOps, bootstrap manuel une fois par serveur
