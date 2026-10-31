@@ -1,0 +1,17 @@
+# Déploiements du serveur "srvgp01".
+# Lu par l'instance doco-cd de ce serveur (POLL_CONFIG -> target: srvgp01).
+# Un document YAML (séparé par ---) = un projet compose.
+
+# Plex : configuré mais INACTIF ici (actif sur srvfr01).
+# destroy.enabled: true  -> doco-cd s'assure que plex ne tourne pas sur ce serveur
+# destroy.enabled: false -> doco-cd déploie plex
+# Ne jamais l'activer sur les deux serveurs à la fois.
+name: plex
+working_dir: apps/plex
+environment:
+  PLEX_HOST_DIR: /opt/apps/plex
+destroy:
+  enabled: true
+  # Garder données et images : on arrête le service, on ne supprime rien d'autre
+  remove_volumes: false
+  remove_images: false

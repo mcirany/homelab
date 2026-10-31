@@ -31,6 +31,19 @@ Chaque serveur a sa propre instance doco-cd avec un `DOCO_TARGET` (ex. `srvfr01`
 que `.doco-cd.<DOCO_TARGET>.yml`. Pour ajouter un serveur : créer `.doco-cd.<nom>.yml`, puis
 bootstrapper doco-cd sur la machine avec `DOCO_TARGET=<nom>`.
 
+### App active sur un seul serveur (ex. plex)
+
+L'app est déclarée dans les fichiers des deux serveurs, avec `destroy.enabled` comme interrupteur :
+
+| `destroy.enabled` | Effet sur ce serveur |
+|---|---|
+| `false` | doco-cd déploie l'app |
+| `true` | doco-cd l'arrête et la supprime (avec `remove_volumes: false`, données conservées) |
+
+Pour basculer : passer à `true` sur le serveur actif et à `false` sur l'autre, dans le même commit.
+Ne pas utiliser les `profiles` compose pour ça : sans profil actif, compose échoue avec
+`no service selected`.
+
 C'est un modèle pull : aucun serveur n'a besoin d'accès SSH ou d'un socket Docker distant sur
 un autre. Les valeurs propres à un hôte (chemins, etc.) vont dans le bloc `environment:` du
 fichier du serveur, pour que `apps/` reste générique.

@@ -1,0 +1,68 @@
+# Plex Media Server. Réseau hôte (découverte locale, DLNA), donc pas exposé via traefik.
+#
+# Garde-fous avant démarrage (un échec fait échouer le déploiement doco-cd, plex ne démarre pas) :
+#   - bind mounts avec create_host_path: false -> erreur si un chemin n'existe pas sur l'hôte
+#   - /dev/dri absent -> erreur à la création du conteneur
+#   - service preflight -> erreur si les données plex ne sont pas migrées ou si une bibliothèque est vide
+
+x-host-path: &host-path
+  type: bind
+  bind:
+    create_host_path: false
+
+services:
+  preflight:
+    image: busybox:1.37.0
+    network_mode: none
+    restart: "no"
+    volumes:
+      - <<: *host-path
+        source: ${PLEX_HOST_DIR:?PLEX_HOST_DIR non défini}/data
+        target: /config
+        read_only: true
+      - <<: *host-path
+        source: /mnt/Libraries
+        target: /libraries
+        read_only: true
+    command:
+      - sh
+      - -c
+      - |
+        set -e
+        prefs="/config/Library/Application Support/Plex Media Server/Preferences.xml"
+        [ -f "$$prefs" ] || { echo "ERREUR: $$prefs absent, données plex non migrées"; exit 1; }
+        for d in Series Movies; do
+          [ -n "$$(ls -A /libraries/$$d 2>/dev/null)" ] || { echo "ERREUR: /mnt/Libraries/$$d absent ou vide"; exit 1; }
+        done
+        echo "preflight OK"
+
+  plex:
+    image: plexinc/pms-docker:1.43.5.11079-b3b13e506
+    container_name: plex
+    restart: unless-stopped
+    network_mode: host
+    depends_on:
+      preflight:
+        condition: service_completed_successfully
+    devices:
+      # Transcodage matériel (Intel Quick Sync / VAAPI)
+      - /dev/dri:/dev/dri
+    environment:
+      TZ: Europe/Paris
+      # Image officielle Plex : PLEX_UID/PLEX_GID (PUID/PGID sont propres à linuxserver)
+      PLEX_UID: 1000
+      PLEX_GID: 1000
+    volumes:
+      # Chemins absolus sur l'hôte, hors du clone git (sinon perdu au redéploiement)
+      - <<: *host-path
+        source: ${PLEX_HOST_DIR:?PLEX_HOST_DIR non défini}/data
+        target: /config
+      - <<: *host-path
+        source: ${PLEX_HOST_DIR:?PLEX_HOST_DIR non défini}/transcode
+        target: /transcode
+      - <<: *host-path
+        source: /mnt/Libraries/Series
+        target: /series
+      - <<: *host-path
+        source: /mnt/Libraries/Movies
+        target: /movies

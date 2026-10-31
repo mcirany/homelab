@@ -13,3 +13,14 @@ working_dir: apps/seer
 environment:
   SEER_HOST_DIR: /opt/apps/seer
 destroy: false
+---
+# Plex : ACTIF ici (inactif sur srvgp01, voir .doco-cd.srvgp01.yml).
+# Pour basculer : passer destroy.enabled à true ici et à false sur l'autre serveur.
+name: plex
+working_dir: apps/plex
+environment:
+  PLEX_HOST_DIR: /opt/apps/plex
+destroy:
+  enabled: false
+  remove_volumes: false
+  remove_images: false
