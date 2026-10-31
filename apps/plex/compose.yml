@@ -12,7 +12,7 @@ x-host-path: &host-path
 
 services:
   preflight:
-    image: busybox:1.37.0
+    image: busybox:1.38.0
     network_mode: none
     restart: "no"
     volumes:
