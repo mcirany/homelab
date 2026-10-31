@@ -8,7 +8,7 @@ x-host-path: &host-path
 
 services:
   tautulli:
-    image: tautulli/tautulli:v2.15.2
+    image: tautulli/tautulli:v2.18.2
     container_name: tautulli
     restart: unless-stopped
     environment:
