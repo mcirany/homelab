@@ -1,8 +1,0 @@
-[[resource_sync]]
-name = "truenas-resource-sync"
-[resource_sync.config]
-git_provider = "github.com"
-git_account = "mickaelcirany@icloud.com"
-repo = "cancrelat/homelab"
-resource_path = ["infra/komodo/server.toml", "truenas/stacks.toml"]
-pending_alert = false
