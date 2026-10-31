@@ -9,10 +9,10 @@ interroge le repo toutes les 3 minutes.
 ```
 .
 ├── apps/                    # Applications (un dossier = un projet compose)
-│   └── paperless/
-│       ├── compose.yaml
-│       ├── secrets.env.example   # modèle, en clair, sans valeurs
-│       └── secrets.enc.env       # secrets chiffrés SOPS (versionné)
+│   ├── plex/
+│   │   └── compose.yml
+│   └── seer/
+│       └── compose.yml
 ├── infra/                   # Briques d'infra
 │   ├── doco-cd/             # Agent GitOps, bootstrap manuel une fois par serveur
 │   └── traefik/             # Reverse proxy, déployé par doco-cd
