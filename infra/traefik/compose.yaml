@@ -3,7 +3,7 @@
 # "traefik_proxy" et les autres apps s'y rattachent.
 services:
   traefik:
-    image: traefik:v3.7.16
+    image: traefik:v3.7.17
     container_name: traefik
     restart: always
     ports:
