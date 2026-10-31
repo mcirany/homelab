@@ -4,12 +4,6 @@ http:
     ignore-nas-ssl:
       insecureSkipVerify: true
 
-  middlewares:
-    tautulli-whitelist:
-      ipAllowList:
-        sourceRange:
-          - "192.168.1.0/24"
-
   services:
     nas-service:
       loadBalancer:

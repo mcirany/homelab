@@ -1,6 +1,4 @@
-# Tautulli : statistiques Plex, exposé par traefik sur tautulli.cineplex.fr.
-# Newsletter et images publiques, le reste limité au LAN (middleware tautulli-whitelist,
-# défini dans infra/traefik/config/dynamic.yaml).
+# Tautulli : statistiques Plex, exposé par traefik sur tautulli.cineplex.fr (accès privé).
 
 x-host-path: &host-path
   type: bind
@@ -31,23 +29,11 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik_proxy"
 
-      # Route publique (newsletter et images)
-      - "traefik.http.routers.tautulli-public.rule=Host(`tautulli.cineplex.fr`) && (PathPrefix(`/newsletter`) || PathPrefix(`/image`))"
-      - "traefik.http.routers.tautulli-public.entrypoints=websecure"
-      - "traefik.http.routers.tautulli-public.tls=true"
-      - "traefik.http.routers.tautulli-public.tls.certresolver=ovh-resolver"
-      - "traefik.http.routers.tautulli-public.priority=100"
-      - "traefik.http.routers.tautulli-public.service=tautulli-service"
-
-      # Route privée (tout le reste, LAN uniquement)
-      - "traefik.http.routers.tautulli-private.rule=Host(`tautulli.cineplex.fr`)"
-      - "traefik.http.routers.tautulli-private.entrypoints=websecure"
-      - "traefik.http.routers.tautulli-private.tls=true"
-      - "traefik.http.routers.tautulli-private.tls.certresolver=ovh-resolver"
-      - "traefik.http.routers.tautulli-private.priority=10"
-      - "traefik.http.routers.tautulli-private.middlewares=tautulli-whitelist@file"
-      - "traefik.http.routers.tautulli-private.service=tautulli-service"
-
+      - "traefik.http.routers.tautulli.rule=Host(`tautulli.cineplex.fr`)"
+      - "traefik.http.routers.tautulli.entrypoints=websecure"
+      - "traefik.http.routers.tautulli.tls=true"
+      - "traefik.http.routers.tautulli.tls.certresolver=ovh-resolver"
+      - "traefik.http.routers.tautulli.service=tautulli-service"
       - "traefik.http.services.tautulli-service.loadbalancer.server.port=8181"
 
 networks:
