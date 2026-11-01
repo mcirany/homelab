@@ -44,6 +44,8 @@ services:
 
   silo:
     image: ghcr.io/silo-server/silo-server:latest
+    # Même UID/GID que plex : root est refusé sur les médias du NAS
+    user: "1000:1000"
     restart: unless-stopped
     stop_grace_period: 2m
     env_file: secrets.enc.env
