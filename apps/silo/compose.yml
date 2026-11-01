@@ -43,7 +43,7 @@ services:
       retries: 5
 
   silo:
-    image: ghcr.io/silo-server/silo-server:build-1302
+    image: ghcr.io/silo-server/silo-server:latest
     restart: unless-stopped
     stop_grace_period: 2m
     env_file: secrets.enc.env
