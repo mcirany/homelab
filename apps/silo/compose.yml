@@ -49,10 +49,11 @@ services:
     env_file: secrets.enc.env
     environment:
       MODE: integrated
-      # Compte du process silo (911 par défaut) : même UID/GID que plex pour lire les médias du NAS.
+      # Compte du process silo (911 par défaut). Le partage NFS du NAS (sec=sys) n'accepte que
+      # root et le propriétaire des médias : 1027:100 (utilisateur Synology, groupe "users").
       # Ne pas utiliser "user:", l'init de l'image doit démarrer en root.
-      PUID: "1000"
-      PGID: "1000"
+      PUID: "1027"
+      PGID: "100"
       PORT: "8080"
       JF_PORT: "8096"
       REDIS_URL: redis://redis:6379
