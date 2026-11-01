@@ -3,7 +3,7 @@
 services:
   app:
     container_name: doco-cd
-    image: ghcr.io/kimdre/doco-cd:0.131.0
+    image: ghcr.io/kimdre/doco-cd:0.132.0
     restart: unless-stopped
     # Polling uniquement : aucun port publié
     environment:
