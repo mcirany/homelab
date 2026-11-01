@@ -34,3 +34,9 @@ destroy: false
 name: tracearr
 working_dir: apps/tracearr
 destroy: false
+---
+name: silo
+working_dir: apps/silo
+environment:
+  SILO_HOST_DIR: /opt/apps/silo
+destroy: false

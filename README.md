@@ -13,6 +13,9 @@ interroge le repo toutes les 3 minutes.
 │   │   └── compose.yml
 │   ├── seer/
 │   │   └── compose.yml
+│   ├── silo/
+│   │   ├── compose.yml
+│   │   └── secrets.enc.env   # mots de passe postgres / SECRET_KEY, chiffrés SOPS
 │   ├── tautulli/
 │   │   └── compose.yml
 │   └── tracearr/

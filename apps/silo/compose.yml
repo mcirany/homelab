@@ -1,0 +1,95 @@
+# Silo : serveur média (API Jellyfin sur 8096, Audiobookshelf sur 13378), mode "integrated".
+# Secrets (POSTGRES_PASSWORD, SECRET_KEY, DATABASE_URL) dans secrets.enc.env, chiffré SOPS.
+# Le nom de projet "silo" doit rester inchangé : c'est celui de l'ancien déploiement manuel.
+
+x-host-path: &host-path
+  type: bind
+  bind:
+    # Erreur si le dossier n'existe pas, au lieu de démarrer sur un dossier vide
+    create_host_path: false
+
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.7-pg18
+    restart: unless-stopped
+    shm_size: 8gb
+    env_file: secrets.enc.env
+    environment:
+      POSTGRES_USER: silo
+      POSTGRES_DB: silo
+    volumes:
+      # Image pg18 : on monte /var/lib/postgresql (les données sont dans 18/docker)
+      - <<: *host-path
+        source: ${SILO_HOST_DIR:?SILO_HOST_DIR non défini}/postgres
+        target: /var/lib/postgresql
+    command: ["postgres", "-c", "listen_addresses=*"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U silo"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:8.10.3-alpine
+    restart: unless-stopped
+    volumes:
+      - <<: *host-path
+        source: ${SILO_HOST_DIR:?SILO_HOST_DIR non défini}/redis
+        target: /data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  silo:
+    image: ghcr.io/silo-server/silo-server:build-1302
+    restart: unless-stopped
+    stop_grace_period: 2m
+    env_file: secrets.enc.env
+    environment:
+      MODE: integrated
+      PORT: "8080"
+      JF_PORT: "8096"
+      REDIS_URL: redis://redis:6379
+      SILO_PLUGIN_CACHE_DIR: /var/lib/silo/plugins
+      POSTGRES_TUNE: auto
+    ports:
+      - "8090:8080"
+      - "8096:8096"
+      - "13378:13378"
+    volumes:
+      # Même chemin que sur l'hôte : les chemins des bibliothèques sont stockés en base
+      - <<: *host-path
+        source: /mnt/Libraries
+        target: /mnt/Libraries
+        read_only: true
+      # Chemins absolus sur l'hôte, hors du clone git (sinon perdu au redéploiement)
+      - <<: *host-path
+        source: ${SILO_HOST_DIR:?SILO_HOST_DIR non défini}/plugins
+        target: /var/lib/silo/plugins
+      - <<: *host-path
+        source: ${SILO_HOST_DIR:?SILO_HOST_DIR non défini}/artwork
+        target: /var/lib/silo/artwork
+      - <<: *host-path
+        source: ${SILO_HOST_DIR:?SILO_HOST_DIR non défini}/compat
+        target: /var/lib/silo/compat
+      - <<: *host-path
+        source: ${SILO_HOST_DIR:?SILO_HOST_DIR non défini}/transcode
+        target: /tmp/silo-transcode
+      - <<: *host-path
+        source: ${SILO_HOST_DIR:?SILO_HOST_DIR non défini}/download-artifacts
+        target: /tmp/silo-download-artifacts
+      - <<: *host-path
+        source: ${SILO_HOST_DIR:?SILO_HOST_DIR non défini}/catalog-seeds
+        target: /catalog-seeds
+        read_only: true
+      # Métriques de l'hôte affichées par silo
+      - /proc/meminfo:/host/proc/meminfo:ro
+      - /proc/stat:/host/proc/stat:ro
+      - /proc/loadavg:/host/proc/loadavg:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
