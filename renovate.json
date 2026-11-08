@@ -67,6 +67,13 @@
         "ghcr.io/silo-server/silo-server"
       ],
       "versioning": "regex:^build-(?<major>\\d+)$"
+    },
+    {
+      "description": "Sure : tags X.Y.Z stables uniquement (pas d'alpha, rc, hotfix ni stable/latest)",
+      "matchPackageNames": [
+        "ghcr.io/we-promise/sure"
+      ],
+      "allowedVersions": "/^\\d+\\.\\d+\\.\\d+$/"
     }
   ]
 }
