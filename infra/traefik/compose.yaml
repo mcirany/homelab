@@ -22,8 +22,12 @@ services:
       - ${TRAEFIK_HOST_DIR:?TRAEFIK_HOST_DIR non défini}/acme.json:/acme.json
     networks:
       - proxy
+    # DNS publics : 192.168.10.1 ne répond pas depuis srvfr01, et l'hôte utilise le stub
+    # systemd-resolved (127.0.0.53), inaccessible depuis un conteneur. Sans DNS fonctionnel,
+    # traefik ne joint plus Let's Encrypt (ni obtention ni renouvellement de certificats).
     dns:
-      - 192.168.10.1
+      - 1.1.1.1
+      - 8.8.8.8
 
 networks:
   proxy:
