@@ -40,3 +40,9 @@ working_dir: apps/silo
 environment:
   SILO_HOST_DIR: /opt/apps/silo
 destroy: false
+---
+name: sure
+working_dir: apps/sure
+environment:
+  SURE_HOST_DIR: /opt/apps/sure
+destroy: false

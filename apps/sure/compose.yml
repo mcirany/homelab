@@ -1,0 +1,104 @@
+# Sure : finances personnelles, exposé par traefik sur sure.cineplex.fr.
+# Secrets (POSTGRES_PASSWORD, SECRET_KEY_BASE) dans secrets.enc.env, chiffré SOPS.
+# Le nom de projet "sure" doit rester inchangé : le réseau interne s'appelle sure_default.
+# Adapté de https://github.com/we-promise/sure/blob/main/compose.example.yml
+# (sans les services backup/backup-offsite/cloudflared).
+
+x-host-path: &host-path
+  type: bind
+  bind:
+    # Erreur si le dossier n'existe pas, au lieu de démarrer sur un dossier vide
+    create_host_path: false
+
+x-rails-env: &rails_env
+  SELF_HOSTED: "true"
+  # TLS terminé par traefik : Rails doit générer des URLs en https
+  RAILS_FORCE_SSL: "false"
+  RAILS_ASSUME_SSL: "true"
+  DB_HOST: db
+  DB_PORT: "5432"
+  POSTGRES_USER: sure
+  POSTGRES_DB: sure_production
+  REDIS_URL: redis://redis:6379/1
+  TZ: Europe/Paris
+
+services:
+  web:
+    image: ghcr.io/we-promise/sure:0.7.6
+    restart: unless-stopped
+    env_file: secrets.enc.env
+    environment:
+      <<: *rails_env
+    volumes:
+      # Chemin absolu sur l'hôte, hors du clone git (sinon perdu au redéploiement)
+      - <<: *host-path
+        source: ${SURE_HOST_DIR:?SURE_HOST_DIR non défini}/storage
+        target: /rails/storage
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - default
+      - traefik_proxy
+    labels:
+      - "traefik.enable=true"
+      # Nom réel du réseau créé par le projet traefik
+      - "traefik.docker.network=traefik_proxy"
+      - "traefik.http.routers.sure.rule=Host(`sure.cineplex.fr`)"
+      - "traefik.http.routers.sure.entrypoints=websecure"
+      - "traefik.http.routers.sure.tls=true"
+      - "traefik.http.routers.sure.tls.certresolver=ovh-resolver"
+      - "traefik.http.services.sure-service.loadbalancer.server.port=3000"
+
+  worker:
+    image: ghcr.io/we-promise/sure:0.7.6
+    command: bundle exec sidekiq
+    restart: unless-stopped
+    env_file: secrets.enc.env
+    environment:
+      <<: *rails_env
+    volumes:
+      - <<: *host-path
+        source: ${SURE_HOST_DIR:?SURE_HOST_DIR non défini}/storage
+        target: /rails/storage
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  db:
+    image: postgres:16.15
+    restart: unless-stopped
+    env_file: secrets.enc.env
+    environment:
+      POSTGRES_USER: sure
+      POSTGRES_DB: sure_production
+    volumes:
+      - <<: *host-path
+        source: ${SURE_HOST_DIR:?SURE_HOST_DIR non défini}/postgres
+        target: /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sure -d sure_production"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:8.10.3-alpine
+    restart: unless-stopped
+    volumes:
+      - <<: *host-path
+        source: ${SURE_HOST_DIR:?SURE_HOST_DIR non défini}/redis
+        target: /data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+networks:
+  traefik_proxy:
+    external: true
