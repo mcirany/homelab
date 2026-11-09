@@ -1,0 +1,46 @@
+# Happyplex v2 (refonte Go), exposé par traefik sur happy.cineplex.fr.
+# Tourne à côté de la v1 le temps de la bascule : projet compose « happyplex-next »
+# (voir .doco-cd.srvfr01.yml), aucun nom ni volume partagé avec la v1.
+#
+# Le .env ne contient que de quoi démarrer : HP_SESSION_KEY et HP_SECRET_KEY, dans
+# secrets.enc.env (SOPS). Tout le reste (seedbox, qBittorrent, NAS en SMB, Radarr, Sonarr,
+# Prowlarr, TMDB, Plex) se configure dans l'interface : Compte → Paramètres.
+# HP_SECRET_KEY chiffre ces réglages en base : la perdre oblige à tout ressaisir.
+#
+# Aucun montage du NAS : Happyplex s'y connecte lui-même en SMB.
+# Premier compte : docker compose -p happyplex-next exec happyplex /happyplex user add <nom> --admin
+services:
+  happyplex:
+    # Étiquette mobile de la branche refonte/go-v2 (la CI publie aussi le SHA du commit).
+    # À remplacer par un SHA, puis par une version, dès qu'il y en a une.
+    image: ghcr.io/laulodev/happyplex-v2:refonte
+    pull_policy: always
+    restart: unless-stopped
+    # Le transfert en cours enregistre son point de reprise avant l'arrêt
+    stop_grace_period: 60s
+    env_file: secrets.enc.env
+    environment:
+      HP_LOG_LEVEL: info
+      TZ: Europe/Paris
+    volumes:
+      # Base SQLite + sauvegardes quotidiennes. Volume nommé : l'image crée /data pour
+      # l'utilisateur nonroot (65532), un dossier de l'hôte devrait lui appartenir.
+      - data:/data
+    networks:
+      - traefik_proxy
+    labels:
+      - "traefik.enable=true"
+      # Nom réel du réseau créé par le projet traefik
+      - "traefik.docker.network=traefik_proxy"
+      - "traefik.http.routers.happyplex-next.rule=Host(`happy.cineplex.fr`)"
+      - "traefik.http.routers.happyplex-next.entrypoints=websecure"
+      - "traefik.http.routers.happyplex-next.tls=true"
+      - "traefik.http.routers.happyplex-next.tls.certresolver=ovh-resolver"
+      - "traefik.http.services.happyplex-next.loadbalancer.server.port=8080"
+
+volumes:
+  data:
+
+networks:
+  traefik_proxy:
+    external: true
