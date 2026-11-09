@@ -11,8 +11,8 @@
 # Premier compte : docker compose -p happyplex-next exec happyplex /happyplex user add <nom> --admin
 services:
   happyplex:
-    # Version figée : SHA du commit de la branche refonte/go-v2 (étiquette publiée par la CI).
-    # Mettre à jour = changer ce SHA ; doco-cd redéploie au prochain passage.
+    # Version figée (releases : github.com/laulodev/happyplex/releases).
+    # Mettre à jour = changer la version ; doco-cd redéploie au prochain passage.
     image: ghcr.io/laulodev/happyplex:2.0.0
     restart: unless-stopped
     # Le transfert en cours enregistre son point de reprise avant l'arrêt
