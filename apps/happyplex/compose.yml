@@ -13,7 +13,7 @@ services:
   happyplex:
     # Version figée : SHA du commit de la branche refonte/go-v2 (étiquette publiée par la CI).
     # Mettre à jour = changer ce SHA ; doco-cd redéploie au prochain passage.
-    image: ghcr.io/laulodev/happyplex-v2:0f4a0ba284bc64424a8d734cc6c716efead8830f
+    image: ghcr.io/laulodev/happyplex-v2:0ce62766fd5cd1518e965ef8d9ba533c9afa24bb
     restart: unless-stopped
     # Le transfert en cours enregistre son point de reprise avant l'arrêt
     stop_grace_period: 60s
