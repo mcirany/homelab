@@ -93,7 +93,7 @@ Vérifier avant chaque commit que le fichier contient bien `ENC[` et un bloc `so
    printf '%s' 'github_pat_...' > secrets/git_access_token
    cp /chemin/vers/keys.txt secrets/sops_age_key   # clé privée age du serveur
    # Registres privés (images ghcr.io/laulodev/…) : voir « Images privées » plus bas
-   printf '{"auths":{"ghcr.io":{"auth":"%s"}}}' "$(printf 'utilisateur-github:ghp_...' | base64)" > secrets/docker_config.json
+   printf '{"auths":{"ghcr.io":{"auth":"%s"}}}\n' "$(printf '%s:%s' utilisateur-github ghp_... | base64 -w0)" > secrets/docker_config.json
    chmod 600 secrets/*
    docker compose up -d && docker compose logs -f
    ```
@@ -109,7 +109,7 @@ container, fourni par le secret `secrets/docker_config.json` ([doc doco-cd](http
 2. Sur le serveur, dans `/opt/infra/doco-cd` :
 
    ```sh
-   printf '{"auths":{"ghcr.io":{"auth":"%s"}}}' "$(printf 'utilisateur-github:ghp_...' | base64)" > secrets/docker_config.json
+   printf '{"auths":{"ghcr.io":{"auth":"%s"}}}\n' "$(printf '%s:%s' utilisateur-github ghp_... | base64 -w0)" > secrets/docker_config.json
    chmod 600 secrets/docker_config.json
    docker compose up -d     # après avoir copié le compose.yaml à jour
    ```
