@@ -46,3 +46,8 @@ working_dir: apps/sure
 environment:
   SURE_HOST_DIR: /opt/apps/sure
 destroy: false
+---
+# Happyplex v2, en parallèle de la v1 jusqu'à la bascule (happy.cineplex.fr).
+name: happyplex-next
+working_dir: apps/happyplex
+destroy: false

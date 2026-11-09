@@ -19,6 +19,9 @@ services:
     secrets:
       - git_access_token
       - sops_age_key
+      # Identifiants des registres privés (ghcr.io/laulodev/…), format config.json de Docker
+      - source: docker_config
+        target: /root/.docker/config.json
     volumes:
       # Le socket Docker donne un accès équivalent root à l'hôte
       - /var/run/docker.sock:/var/run/docker.sock
@@ -38,6 +41,8 @@ secrets:
     file: ./secrets/git_access_token
   sops_age_key:
     file: ./secrets/sops_age_key
+  docker_config:
+    file: ./secrets/docker_config.json
 
 volumes:
   data:

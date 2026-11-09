@@ -9,6 +9,10 @@ interroge le repo toutes les 3 minutes.
 ```
 .
 ├── apps/                    # Applications (un dossier = un projet compose)
+│   ├── happyplex/            # Happyplex v2 (happy.cineplex.fr)
+│   │   ├── compose.yml
+│   │   ├── secrets.env.example
+│   │   └── secrets.enc.env   # HP_SESSION_KEY / HP_SECRET_KEY, chiffrés SOPS
 │   ├── plex/
 │   │   └── compose.yml
 │   ├── seer/
@@ -88,9 +92,31 @@ Vérifier avant chaque commit que le fichier contient bien `ENC[` et un bloc `so
    mkdir -m 700 secrets
    printf '%s' 'github_pat_...' > secrets/git_access_token
    cp /chemin/vers/keys.txt secrets/sops_age_key   # clé privée age du serveur
+   # Registres privés (images ghcr.io/laulodev/…) : voir « Images privées » plus bas
+   printf '{"auths":{"ghcr.io":{"auth":"%s"}}}' "$(printf 'utilisateur-github:ghp_...' | base64)" > secrets/docker_config.json
    chmod 600 secrets/*
    docker compose up -d && docker compose logs -f
    ```
+
+## Images privées (ghcr.io)
+
+doco-cd télécharge les images avec les identifiants de `/root/.docker/config.json` dans son
+container, fourni par le secret `secrets/docker_config.json` ([doc doco-cd](https://doco.cd/latest/Advanced/Container-Registry-Authentication/)).
+
+1. GitHub → Settings → Developer settings → *Personal access tokens (classic)* : jeton avec
+   le seul droit `read:packages`, sans expiration ou à renouveler. Le compte doit avoir accès
+   aux paquets de l'organisation (ex. `laulodev`).
+2. Sur le serveur, dans `/opt/infra/doco-cd` :
+
+   ```sh
+   printf '{"auths":{"ghcr.io":{"auth":"%s"}}}' "$(printf 'utilisateur-github:ghp_...' | base64)" > secrets/docker_config.json
+   chmod 600 secrets/docker_config.json
+   docker compose up -d     # après avoir copié le compose.yaml à jour
+   ```
+3. Vérifier : `docker compose logs -f`, pas de `unauthorized` ni `pull access denied` au déploiement.
+
+Le fichier reste sur le serveur (`infra/doco-cd/secrets/` est ignoré par git). Il contient le
+jeton en clair (base64) : `chmod 600` obligatoire.
 
 ## Ajouter une app
 
