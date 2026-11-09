@@ -11,10 +11,9 @@
 # Premier compte : docker compose -p happyplex-next exec happyplex /happyplex user add <nom> --admin
 services:
   happyplex:
-    # Étiquette mobile de la branche refonte/go-v2 (la CI publie aussi le SHA du commit).
-    # À remplacer par un SHA, puis par une version, dès qu'il y en a une.
-    image: ghcr.io/laulodev/happyplex-v2:refonte
-    pull_policy: always
+    # Version figée : SHA du commit de la branche refonte/go-v2 (étiquette publiée par la CI).
+    # Mettre à jour = changer ce SHA ; doco-cd redéploie au prochain passage.
+    image: ghcr.io/laulodev/happyplex-v2:0f4a0ba284bc64424a8d734cc6c716efead8830f
     restart: unless-stopped
     # Le transfert en cours enregistre son point de reprise avant l'arrêt
     stop_grace_period: 60s
