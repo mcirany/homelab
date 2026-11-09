@@ -13,7 +13,7 @@ services:
   happyplex:
     # Version figée : SHA du commit de la branche refonte/go-v2 (étiquette publiée par la CI).
     # Mettre à jour = changer ce SHA ; doco-cd redéploie au prochain passage.
-    image: ghcr.io/laulodev/happyplex-v2:266a4ea6aba6cfba65d1f837d65091dbcf4a6006
+    image: ghcr.io/laulodev/happyplex-v2:a00cad58dbc007d7c99886cadd3167e59ab905ae
     restart: unless-stopped
     # Le transfert en cours enregistre son point de reprise avant l'arrêt
     stop_grace_period: 60s
@@ -22,12 +22,10 @@ services:
       HP_LOG_LEVEL: info
       TZ: Europe/Paris
     volumes:
-      # Base SQLite + sauvegardes quotidiennes. Volume nommé : l'image crée /data pour
-      # l'utilisateur nonroot (65532), un dossier de l'hôte devrait lui appartenir.
+      # Base SQLite, sauvegardes quotidiennes et état Tailscale (data/tailscale : Happyplex
+      # rejoint lui-même le tailnet pour la connexion avec Tailscale). Volume nommé : l'image
+      # crée /data pour l'utilisateur nonroot (65532), un dossier de l'hôte devrait lui appartenir.
       - data:/data
-      # Connexion « avec Tailscale » : Happyplex demande au Tailscale du serveur qui est
-      # derrière chaque visiteur (Paramètres → Tailscale). Lecture seule.
-      - /var/run/tailscale/tailscaled.sock:/var/run/tailscale/tailscaled.sock:ro
     networks:
       - traefik_proxy
     labels:
