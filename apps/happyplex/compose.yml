@@ -4,7 +4,8 @@
 #
 # Le .env ne contient que de quoi démarrer : HP_SESSION_KEY et HP_SECRET_KEY, dans
 # secrets.enc.env (SOPS). Tout le reste (seedbox, qBittorrent, NAS en SMB, Radarr, Sonarr,
-# Prowlarr, TMDB, Plex) se configure dans l'interface : Compte → Paramètres.
+# Prowlarr, TMDB, Plex, allègement des fichiers) se configure dans l'interface :
+# barre latérale → Paramètres.
 # HP_SECRET_KEY chiffre ces réglages en base : la perdre oblige à tout ressaisir.
 #
 # Aucun montage du NAS : Happyplex s'y connecte lui-même en SMB.
@@ -13,7 +14,7 @@ services:
   happyplex:
     # Version figée (releases : github.com/laulodev/happyplex/releases).
     # Mettre à jour = changer la version ; doco-cd redéploie au prochain passage.
-    image: ghcr.io/laulodev/happyplex:2.1.0
+    image: ghcr.io/laulodev/happyplex:2.2.0
     restart: unless-stopped
     # Le transfert en cours enregistre son point de reprise avant l'arrêt
     stop_grace_period: 60s
@@ -26,6 +27,11 @@ services:
       # rejoint lui-même le tailnet pour la connexion avec Tailscale). Volume nommé : l'image
       # crée /data pour l'utilisateur nonroot (65532), un dossier de l'hôte devrait lui appartenir.
       - data:/data
+      # Dossier de travail de l'allègement des fichiers (MKVToolNix) : chaque fichier y est
+      # copié, réécrit et vérifié avant de retourner sur le NAS, un à la fois (il faut environ
+      # deux fois le plus gros fichier de libre). Volume LVM dédié de 150 Go sur le NVMe,
+      # séparé du système (LV ubuntu-vg/happyplex-work, monté par /etc/fstab, chown 65532).
+      - /srv/happyplex-work:/work
     networks:
       - traefik_proxy
     labels:
