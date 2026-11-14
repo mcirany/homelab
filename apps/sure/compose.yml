@@ -70,7 +70,7 @@ services:
         condition: service_healthy
 
   db:
-    image: postgres:16.15
+    image: postgres:16.16
     restart: unless-stopped
     env_file: secrets.enc.env
     environment:
