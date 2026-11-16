@@ -56,9 +56,8 @@ destroy: false
 name: portabase
 working_dir: apps/portabase
 destroy: false
-# Agent Portabase : à décommenter une fois apps/portabase-agent/secrets.enc.env créé avec
-# l'Edge Key générée dans le dashboard (voir README, « Sauvegardes (Portabase) »).
-# ---
-# name: portabase-agent
-# working_dir: apps/portabase-agent
-# destroy: false
+---
+# Agent Portabase : exécute les sauvegardes (SQLite de Happyplex, postgres de silo et sure).
+name: portabase-agent
+working_dir: apps/portabase-agent
+destroy: false
