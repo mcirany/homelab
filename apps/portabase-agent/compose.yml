@@ -1,0 +1,59 @@
+# Agent Portabase de srvfr01 : exécute les sauvegardes demandées par le dashboard
+# (apps/portabase) et les envoie vers le stockage configuré dans le dashboard.
+# Adapté de https://portabase.io/docs/installation/docker (onglet Agent).
+# Secret (EDGE_KEY) dans secrets.enc.env, chiffré SOPS : clé créée dans le dashboard,
+# Organisation > Settings > Agents. À déployer après le dashboard (voir README).
+#
+# Projet séparé du dashboard : l'agent rejoint les réseaux des apps à sauvegarder, où un
+# service s'appelle déjà "db" (sure), comme la base du dashboard.
+#
+# Bases à sauvegarder :
+# - SQLite de Happyplex : déclarée dans databases.json (aucun secret).
+# - PostgreSQL de silo et de sure : à ajouter dans le dashboard (page de l'agent > Add
+#   database), les mots de passe n'ont pas à être dans le repo.
+#     silo : hôte postgres, port 5432, base silo, utilisateur silo
+#     sure : hôte db, port 5432, base sure_production, utilisateur sure
+services:
+  agent:
+    image: portabase/agent:1.26.3
+    restart: unless-stopped
+    env_file: secrets.enc.env
+    environment:
+      TZ: Europe/Paris
+      POLLING: 5
+      APP_ENV: production
+      LOG: info
+    volumes:
+      # Bases déclarées côté agent, en lecture seule, servies depuis le repo par doco-cd
+      - ./databases.json:/config/config.json:ro
+      # Volume de Happyplex (happyplex.db). Lecture-écriture : la base est en WAL (un lecteur
+      # écrit dans happyplex.db-shm) et la restauration réécrit le fichier.
+      - happyplex-data:/sqlite-data/happyplex
+      # Données internes de l'agent (DATA_PATH)
+      - agent-data:/data
+    extra_hosts:
+      # Doc officielle : permet de joindre les services de l'hôte via "localhost"
+      - "localhost:host-gateway"
+      # Le dashboard est joint par son URL publique (inscrite dans l'Edge Key) : on passe par
+      # le traefik de l'hôte, sans dépendre du DNS ni d'un aller-retour par la box.
+      - "portabase.cineplex.fr:host-gateway"
+    networks:
+      - default
+      - silo
+      - sure
+
+volumes:
+  agent-data:
+  happyplex-data:
+    # Volume "data" du projet compose happyplex-next
+    name: happyplex-next_data
+    external: true
+
+networks:
+  # Réseaux internes des apps dont on sauvegarde la base PostgreSQL
+  silo:
+    name: silo_default
+    external: true
+  sure:
+    name: sure_default
+    external: true

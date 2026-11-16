@@ -15,6 +15,14 @@ interroge le repo toutes les 3 minutes.
 │   │   └── secrets.enc.env   # HP_SESSION_KEY / HP_SECRET_KEY, chiffrés SOPS
 │   ├── plex/
 │   │   └── compose.yml
+│   ├── portabase/            # Dashboard de sauvegarde des bases (portabase.cineplex.fr)
+│   │   ├── compose.yml
+│   │   ├── secrets.env.example
+│   │   └── secrets.enc.env   # PROJECT_SECRET / mot de passe postgres, chiffrés SOPS
+│   ├── portabase-agent/      # Agent qui exécute les sauvegardes sur le serveur
+│   │   ├── compose.yml
+│   │   ├── databases.json    # bases déclarées côté agent (SQLite de Happyplex)
+│   │   └── secrets.env.example   # EDGE_KEY, à chiffrer en secrets.enc.env
 │   ├── seer/
 │   │   └── compose.yml
 │   ├── silo/
@@ -136,6 +144,43 @@ Règles :
   certificats, uploads) va dans un volume nommé ou un chemin absolu de l'hôte.
 - Retirer une app du fichier serveur ne la supprime pas : `destroy` est désactivé pour
   éviter de perdre des volumes par erreur.
+
+## Sauvegardes (Portabase)
+
+[Portabase](https://portabase.io) sauvegarde les bases de srvfr01. Deux projets compose, comme
+dans la [doc officielle](https://portabase.io/docs/installation/docker) :
+
+- `apps/portabase` : le dashboard et son postgres, sur `https://portabase.cineplex.fr`.
+- `apps/portabase-agent` : l'agent, qui lit les bases et envoie les sauvegardes. Il est relié
+  aux réseaux `silo_default` et `sure_default` et monte le volume `happyplex-next_data`.
+
+Mise en service (une seule fois) :
+
+1. Créer l'enregistrement DNS `portabase.cineplex.fr`, puis pousser : doco-cd déploie le dashboard.
+2. Ouvrir le dashboard et créer le compte administrateur tout de suite (le premier compte créé).
+3. **Organisation > Settings > Agents** : créer l'agent `srvfr01` et copier son Edge Key.
+4. Chiffrer la clé, puis décommenter le bloc `portabase-agent` de `.doco-cd.srvfr01.yml` :
+
+   ```sh
+   cp apps/portabase-agent/secrets.env.example apps/portabase-agent/secrets.enc.env
+   $EDITOR apps/portabase-agent/secrets.enc.env    # EDGE_KEY=...
+   sops encrypt -i apps/portabase-agent/secrets.enc.env
+   ```
+5. Une fois l'agent connecté, la SQLite de Happyplex apparaît seule (déclarée dans
+   `databases.json`). Ajouter les PostgreSQL depuis la page de l'agent (**Add database**) :
+
+   | App | Hôte | Port | Base | Utilisateur | Mot de passe |
+   |---|---|---|---|---|---|
+   | silo | `postgres` | 5432 | `silo` | `silo` | `sops decrypt apps/silo/secrets.enc.env` |
+   | sure | `db` | 5432 | `sure_production` | `sure` | `sops decrypt apps/sure/secrets.enc.env` |
+
+6. Ranger chaque base dans un projet, puis régler planification, rétention et stockage.
+   Le stockage local est sur srvfr01 (volume `portabase_portabase-data`) : ajouter un stockage
+   externe (S3, NAS…) pour que les sauvegardes survivent à la perte du serveur.
+
+Sauvegarder une nouvelle base : relier l'agent au réseau de l'app (postgres) ou monter son
+volume (SQLite) dans `apps/portabase-agent/compose.yml`. Tracearr n'est pas couvert : son
+postgres est embarqué dans le conteneur et n'écoute pas sur le réseau.
 
 ## Mises à jour des images (Renovate)
 

@@ -1,0 +1,66 @@
+# Portabase : dashboard de sauvegarde des bases de données, exposé par traefik sur
+# portabase.cineplex.fr. Les sauvegardes sont exécutées par l'agent (apps/portabase-agent).
+# Adapté de https://portabase.io/docs/installation/docker (Docker Compose) et
+# https://portabase.io/docs/dashboard/configuration/reverse-proxy (Traefik V3).
+# Secrets (PROJECT_SECRET, POSTGRES_PASSWORD, DATABASE_URL) dans secrets.enc.env, chiffré SOPS.
+# PROJECT_SECRET chiffre les données sensibles et les échanges avec les agents : le changer
+# invalide les Edge Keys et les sauvegardes chiffrées.
+# Le nom de projet "portabase" doit rester inchangé : les volumes s'appellent portabase_*.
+services:
+  portabase:
+    image: portabase/portabase:1.36.2
+    restart: unless-stopped
+    env_file: secrets.enc.env
+    environment:
+      TZ: Europe/Paris
+      # URL publique : sert aux liens générés et est inscrite dans l'Edge Key des agents
+      PROJECT_URL: https://portabase.cineplex.fr
+      # Derrière traefik : le serveur d'upload (tusd) fait confiance aux en-têtes X-Forwarded-*
+      TUSD_BEHIND_PROXY: "true"
+    volumes:
+      # Données du dashboard, dont les sauvegardes du stockage local
+      - portabase-data:/data
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    networks:
+      - default
+      - traefik_proxy
+    labels:
+      - "traefik.enable=true"
+      # Nom réel du réseau créé par le projet traefik
+      - "traefik.docker.network=traefik_proxy"
+      - "traefik.http.routers.portabase.rule=Host(`portabase.cineplex.fr`)"
+      - "traefik.http.routers.portabase.entrypoints=websecure"
+      - "traefik.http.routers.portabase.tls=true"
+      - "traefik.http.routers.portabase.tls.certresolver=ovh-resolver"
+      - "traefik.http.services.portabase-service.loadbalancer.server.port=80"
+
+  db:
+    image: postgres:17.12-alpine
+    restart: unless-stopped
+    env_file: secrets.enc.env
+    environment:
+      POSTGRES_USER: portabase
+      POSTGRES_DB: portabase
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U portabase -d portabase"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:
+  portabase-data:
+
+networks:
+  traefik_proxy:
+    external: true

@@ -51,3 +51,14 @@ destroy: false
 name: happyplex-next
 working_dir: apps/happyplex
 destroy: false
+---
+# Portabase : dashboard de sauvegarde des bases (portabase.cineplex.fr).
+name: portabase
+working_dir: apps/portabase
+destroy: false
+# Agent Portabase : à décommenter une fois apps/portabase-agent/secrets.enc.env créé avec
+# l'Edge Key générée dans le dashboard (voir README, « Sauvegardes (Portabase) »).
+# ---
+# name: portabase-agent
+# working_dir: apps/portabase-agent
+# destroy: false

@@ -1,0 +1,11 @@
+{
+  "databases": [
+    {
+      "name": "Happyplex (SQLite)",
+      "type": "sqlite",
+      "host": "localhost",
+      "path": "/sqlite-data/happyplex/happyplex.db",
+      "generated_id": "24eccbe6-99d6-4047-9b94-1164ff2dde06"
+    }
+  ]
+}
