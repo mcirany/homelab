@@ -57,7 +57,17 @@ name: portabase
 working_dir: apps/portabase
 destroy: false
 ---
-# Agent Portabase : exécute les sauvegardes (SQLite de Happyplex, postgres de silo et sure).
+# Agent Portabase : exécute les sauvegardes (postgres de silo et sure, données d'Actual).
 name: portabase-agent
 working_dir: apps/portabase-agent
+environment:
+  # Même dossier que le projet actual : l'agent y lit les données à sauvegarder
+  ACTUAL_HOST_DIR: /opt/apps/actual
+destroy: false
+---
+# Actual Budget : budget personnel (budget.cineplex.fr).
+name: actual
+working_dir: apps/actual
+environment:
+  ACTUAL_HOST_DIR: /opt/apps/actual
 destroy: false

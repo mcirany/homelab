@@ -7,12 +7,21 @@
 # Projet séparé du dashboard : l'agent rejoint les réseaux des apps à sauvegarder, où un
 # service s'appelle déjà "db" (sure), comme la base du dashboard.
 #
-# Bases à sauvegarder :
-# - SQLite de Happyplex : déclarée dans databases.json (aucun secret).
-# - PostgreSQL de silo et de sure : à ajouter dans le dashboard (page de l'agent > Add
-#   database), les mots de passe n'ont pas à être dans le repo.
+# Sources à sauvegarder : toutes déclarées dans le dashboard (page de l'agent > Add
+# database), rien dans le repo (pas de databases.json, ni mot de passe).
+# - PostgreSQL de silo et de sure :
 #     silo : hôte postgres, port 5432, base silo, utilisateur silo
 #     sure : hôte db, port 5432, base sure_production, utilisateur sure
+# - Actual Budget : dossier de données monté dans /sqlite-data/actual
+#     type Files  : chemin /sqlite-data/actual (tout : comptes et budgets)
+#     type SQLite : chemin /sqlite-data/actual/server-files/account.sqlite (comptes seuls)
+
+x-host-path: &host-path
+  type: bind
+  bind:
+    # Erreur si le dossier n'existe pas, au lieu de démarrer sur un dossier vide
+    create_host_path: false
+
 services:
   agent:
     image: portabase/agent:1.26.3
@@ -24,11 +33,11 @@ services:
       APP_ENV: production
       LOG: info
     volumes:
-      # Bases déclarées côté agent, en lecture seule, servies depuis le repo par doco-cd
-      - ./databases.json:/config/config.json:ro
-      # Volume de Happyplex (happyplex.db). Lecture-écriture : la base est en WAL (un lecteur
-      # écrit dans happyplex.db-shm) et la restauration réécrit le fichier.
-      - happyplex-data:/sqlite-data/happyplex
+      # Données d'Actual Budget (même dossier hôte que apps/actual). Lecture-écriture :
+      # la restauration réécrit les fichiers.
+      - <<: *host-path
+        source: ${ACTUAL_HOST_DIR:?ACTUAL_HOST_DIR non défini}/data
+        target: /sqlite-data/actual
       # Données internes de l'agent (DATA_PATH)
       - agent-data:/data
     extra_hosts:
@@ -44,10 +53,6 @@ services:
 
 volumes:
   agent-data:
-  happyplex-data:
-    # Volume "data" du projet compose happyplex-next
-    name: happyplex-next_data
-    external: true
 
 networks:
   # Réseaux internes des apps dont on sauvegarde la base PostgreSQL

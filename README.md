@@ -9,6 +9,8 @@ interroge le repo toutes les 3 minutes.
 ```
 .
 ├── apps/                    # Applications (un dossier = un projet compose)
+│   ├── actual/               # Actual Budget (budget.cineplex.fr)
+│   │   └── compose.yml
 │   ├── happyplex/            # Happyplex v2 (happy.cineplex.fr)
 │   │   ├── compose.yml
 │   │   ├── secrets.env.example
@@ -21,7 +23,6 @@ interroge le repo toutes les 3 minutes.
 │   │   └── secrets.enc.env   # PROJECT_SECRET / mot de passe postgres, chiffrés SOPS
 │   ├── portabase-agent/      # Agent qui exécute les sauvegardes sur le serveur
 │   │   ├── compose.yml
-│   │   ├── databases.json    # bases déclarées côté agent (SQLite de Happyplex)
 │   │   └── secrets.env.example   # EDGE_KEY, à chiffrer en secrets.enc.env
 │   ├── seer/
 │   │   └── compose.yml
@@ -152,7 +153,7 @@ dans la [doc officielle](https://portabase.io/docs/installation/docker) :
 
 - `apps/portabase` : le dashboard et son postgres, sur `https://portabase.cineplex.fr`.
 - `apps/portabase-agent` : l'agent, qui lit les bases et envoie les sauvegardes. Il est relié
-  aux réseaux `silo_default` et `sure_default` et monte le volume `happyplex-next_data`.
+  aux réseaux `silo_default` et `sure_default` et monte le dossier de données d'Actual.
 
 Mise en service (une seule fois) :
 
@@ -166,20 +167,29 @@ Mise en service (une seule fois) :
    $EDITOR apps/portabase-agent/secrets.enc.env    # EDGE_KEY=...
    sops encrypt -i apps/portabase-agent/secrets.enc.env
    ```
-5. Une fois l'agent connecté, la SQLite de Happyplex apparaît seule (déclarée dans
-   `databases.json`). Ajouter les PostgreSQL depuis la page de l'agent (**Add database**) :
+5. Une fois l'agent connecté, ajouter les sources depuis sa page (**Add database**). Rien
+   n'est déclaré dans le repo. Les PostgreSQL :
 
    | App | Hôte | Port | Base | Utilisateur | Mot de passe |
    |---|---|---|---|---|---|
    | silo | `postgres` | 5432 | `silo` | `silo` | `sops decrypt apps/silo/secrets.enc.env` |
    | sure | `db` | 5432 | `sure_production` | `sure` | `sops decrypt apps/sure/secrets.enc.env` |
 
+   Actual Budget (dossier `/opt/apps/actual/data`, monté dans l'agent sur `/sqlite-data/actual`) :
+
+   | Type | Chemin | Couvre |
+   |---|---|---|
+   | Files | `/sqlite-data/actual` | tout : comptes et budgets |
+   | SQLite | `/sqlite-data/actual/server-files/account.sqlite` | comptes et mot de passe seuls |
+
 6. Ranger chaque base dans un projet, puis régler planification, rétention et stockage.
    Le stockage local est sur srvfr01 (volume `portabase_portabase-data`) : ajouter un stockage
    externe (S3, NAS…) pour que les sauvegardes survivent à la perte du serveur.
 
 Sauvegarder une nouvelle base : relier l'agent au réseau de l'app (postgres) ou monter son
-volume (SQLite) dans `apps/portabase-agent/compose.yml`. Tracearr n'est pas couvert : son
+volume ou son dossier (SQLite, fichiers) dans `apps/portabase-agent/compose.yml`, puis la
+déclarer dans le dashboard. Happyplex n'est pas couvert par Portabase (il fait ses propres
+sauvegardes quotidiennes dans son volume). Tracearr n'est pas couvert non plus : son
 postgres est embarqué dans le conteneur et n'écoute pas sur le réseau.
 
 ## Mises à jour des images (Renovate)

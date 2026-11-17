@@ -1,0 +1,48 @@
+# Actual Budget : budget personnel, exposé par traefik sur budget.cineplex.fr.
+# Adapté de https://github.com/actualbudget/actual/blob/master/packages/sync-server/docker-compose.yml
+# (sans publication de port : TLS terminé par traefik).
+# Aucun secret : le mot de passe du serveur se choisit au premier accès à l'interface.
+# Sauvegarde : le dossier de données est aussi monté dans l'agent Portabase
+# (apps/portabase-agent), la source se déclare dans le dashboard.
+
+x-host-path: &host-path
+  type: bind
+  bind:
+    # Erreur si le dossier n'existe pas, au lieu de démarrer sur un dossier vide
+    create_host_path: false
+
+services:
+  actual:
+    # Versions calendaires AA.M.P, une par mois (releases : github.com/actualbudget/actual/releases)
+    image: actualbudget/actual-server:26.11.0
+    restart: unless-stopped
+    environment:
+      TZ: Europe/Paris
+    volumes:
+      # Chemin absolu sur l'hôte, hors du clone git (sinon perdu au redéploiement).
+      # Contient server-files (account.sqlite : comptes, mot de passe) et user-files
+      # (budgets synchronisés). L'image tourne en root : aucun chown à prévoir.
+      - <<: *host-path
+        source: ${ACTUAL_HOST_DIR:?ACTUAL_HOST_DIR non défini}/data
+        target: /data
+    healthcheck:
+      test: ["CMD-SHELL", "node scripts/health-check.js"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - traefik_proxy
+    labels:
+      - "traefik.enable=true"
+      # Nom réel du réseau créé par le projet traefik
+      - "traefik.docker.network=traefik_proxy"
+      - "traefik.http.routers.actual.rule=Host(`budget.cineplex.fr`)"
+      - "traefik.http.routers.actual.entrypoints=websecure"
+      - "traefik.http.routers.actual.tls=true"
+      - "traefik.http.routers.actual.tls.certresolver=ovh-resolver"
+      - "traefik.http.services.actual-service.loadbalancer.server.port=5006"
+
+networks:
+  traefik_proxy:
+    external: true
