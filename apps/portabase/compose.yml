@@ -8,7 +8,7 @@
 # Le nom de projet "portabase" doit rester inchangé : les volumes s'appellent portabase_*.
 services:
   portabase:
-    image: portabase/portabase:1.36.2
+    image: portabase/portabase:1.36.3
     restart: unless-stopped
     env_file: secrets.enc.env
     environment:
