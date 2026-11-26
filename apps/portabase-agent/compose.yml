@@ -24,7 +24,7 @@ x-host-path: &host-path
 
 services:
   agent:
-    image: portabase/agent:1.26.3
+    image: portabase/agent:1.27.0
     restart: unless-stopped
     env_file: secrets.enc.env
     environment:
